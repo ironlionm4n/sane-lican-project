@@ -20,7 +20,7 @@ public class BambooMingameController : MonoBehaviour
 
     private bool increasing = true; //Controls if the bar moves up (increasing values) or down (decreasing values)
 
-    private float barSpeed = 5f; //How fast the bar moves up and down
+    private float barSpeed = 250f; //How fast the bar moves up and down
 
     private float[] critZone = new float[2]; //The value spread on the slider that is considered a crit (should be ordered LOWEST, HIGHEST value)
 
@@ -28,7 +28,7 @@ public class BambooMingameController : MonoBehaviour
 
     private bool stopped = false; //If the player has tapped the screen to stop the bar or not
 
-    private int critZoneSpread = 6; //The spread of how many values the crit zone is
+    private int critZoneSpread = 10; //The spread of how many values the crit zone is
 
     private int winZoneSpread = 30; //The spread of how many values the win zone is
 
@@ -37,7 +37,6 @@ public class BambooMingameController : MonoBehaviour
 
     private float critImageToSpreadProportion = 6.85f; //Used for sizing the crit zone based on crit spread. Get value from PrintCritImage logging method
 
-    private float minMaxValueForZoneYPosition = 225f; //The pos and negative max for the zones gameobject y position before the zone extends beyond the bar bounds
 
     //Win vairables
     [SerializeField]
@@ -55,8 +54,6 @@ public class BambooMingameController : MonoBehaviour
         input = new Quickdraw();
         strengthBar.value = 0;
 
-        ChooseRandomZonePoint();
-        ResetGame();
 
         //Logging code
         //PrintCritImageToZoneSizeProportion();
@@ -77,27 +74,21 @@ public class BambooMingameController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        ResetGame();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (stop.ReadValue<float>() > 0)
         {
             stopped = true;
         }
-    }
-
-    private void FixedUpdate()
-    {
-        return;
 
         if (!stopped)
         {
             if (increasing)
             {
-                strengthBar.value += barSpeed; //Increase the slider value based on the bar speed 
+                strengthBar.value += barSpeed * Time.deltaTime; //Increase the slider value based on the bar speed 
 
                 if(strengthBar.value == strengthBar.maxValue) //If the slider value reaches the max, switch to decreasing
                 {
@@ -106,7 +97,7 @@ public class BambooMingameController : MonoBehaviour
             }
             else
             {
-                strengthBar.value -= barSpeed; //Decrease the slider value based on the bar speed
+                strengthBar.value -= barSpeed * Time.deltaTime; //Decrease the slider value based on the bar speed
 
                 if( strengthBar.value == strengthBar.minValue ) //If the slider value reaches the min, switch to decreasing
                 { 
@@ -123,13 +114,13 @@ public class BambooMingameController : MonoBehaviour
 
     private void CheckForWin()
     {
-        if(selectedValue < critZone[1] && selectedValue > critZone[0])
+        if(selectedValue <= critZone[1] && selectedValue >= critZone[0])
         {
             criticalWin = true;
             return;
         }
 
-        if(selectedValue < winZone[1] && selectedValue > winZone[0])
+        if(selectedValue <= winZone[1] && selectedValue >= winZone[0])
         {
             normalWin = true;
             return;
@@ -147,6 +138,13 @@ public class BambooMingameController : MonoBehaviour
 
         winZoneMidVal = Random.Range( minPosValue, maxPosValue );
 
+        //Sets all the values in the crit and win zone arrays
+        critZone[0] = winZoneMidVal - critZoneSpread/2;
+        critZone[1] = winZoneMidVal + critZoneSpread/2;
+
+        winZone[0] = winZoneMidVal - winZoneSpread / 2;
+        winZone[1] = winZoneMidVal + winZoneSpread / 2;
+
         MoveZones();
     }
 
@@ -156,13 +154,23 @@ public class BambooMingameController : MonoBehaviour
         strengthBar.value = winZoneMidVal;
 
         critZoneImage.transform.parent.SetParent(handle.transform);
-        critZoneImage.transform.parent.position = Vector3.zero;
+       
         critZoneImage.transform.parent.localPosition = Vector3.zero;
 
-        critZoneImage.transform.parent.parent = handle.parent;
+        critZoneImage.transform.parent.SetParent(handle.parent);
 
         handle.SetAsLastSibling(); //Makes it so the handle appears above the zones
 
+        ResizeCrit();
+
+    }
+
+    private void ResizeCrit()
+    {
+        //Temporary Testing
+        critZoneSpread = Random.Range(2, 10);
+
+        critZoneImage.rectTransform.sizeDelta = new Vector2(100, critZoneSpread * critImageToSpreadProportion);
     }
 
     public void ResetGame()
@@ -170,9 +178,10 @@ public class BambooMingameController : MonoBehaviour
         stopped = false;
         criticalWin = false;
         normalWin = false;
-        strengthBar.value = 0;
 
         ChooseRandomZonePoint();
+
+        strengthBar.value = 0;
     }
 
     private void PrintCritImageToZoneSizeProportion()
