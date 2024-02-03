@@ -27,7 +27,7 @@ public class BoulderMinigameController : MonoBehaviour
 
     private void OnEnable()
     {
-        press = input.Player.Fire;
+        press = input.Player.One_Tap;
         press.Enable();
     }
 
@@ -45,16 +45,17 @@ public class BoulderMinigameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(press.ReadValue<float>() > 0)
+        if(press.WasPerformedThisFrame())
         {
             strengthBar.value += pressAmount;
         }
 
-        
+        strengthBar.value -= decreaseAmount;
+
     }
 
     private void LateUpdate()
     {
-        strengthBar.value -= decreaseAmount;
+
     }
 }

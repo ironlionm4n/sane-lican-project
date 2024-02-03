@@ -35,6 +35,15 @@ public partial class @Quickdraw: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""One_Tap"",
+                    ""type"": ""Button"",
+                    ""id"": ""c2444085-4348-4c29-a4e1-dbea76e90ce2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Press"",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -90,6 +99,17 @@ public partial class @Quickdraw: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""XR"",
                     ""action"": ""Fire"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bc52ccc1-2429-4ddb-a110-a5329cc8ad91"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""One_Tap"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -678,6 +698,7 @@ public partial class @Quickdraw: IInputActionCollection2, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Fire = m_Player.FindAction("Fire", throwIfNotFound: true);
+        m_Player_One_Tap = m_Player.FindAction("One_Tap", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -752,11 +773,13 @@ public partial class @Quickdraw: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Fire;
+    private readonly InputAction m_Player_One_Tap;
     public struct PlayerActions
     {
         private @Quickdraw m_Wrapper;
         public PlayerActions(@Quickdraw wrapper) { m_Wrapper = wrapper; }
         public InputAction @Fire => m_Wrapper.m_Player_Fire;
+        public InputAction @One_Tap => m_Wrapper.m_Player_One_Tap;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -769,6 +792,9 @@ public partial class @Quickdraw: IInputActionCollection2, IDisposable
             @Fire.started += instance.OnFire;
             @Fire.performed += instance.OnFire;
             @Fire.canceled += instance.OnFire;
+            @One_Tap.started += instance.OnOne_Tap;
+            @One_Tap.performed += instance.OnOne_Tap;
+            @One_Tap.canceled += instance.OnOne_Tap;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -776,6 +802,9 @@ public partial class @Quickdraw: IInputActionCollection2, IDisposable
             @Fire.started -= instance.OnFire;
             @Fire.performed -= instance.OnFire;
             @Fire.canceled -= instance.OnFire;
+            @One_Tap.started -= instance.OnOne_Tap;
+            @One_Tap.performed -= instance.OnOne_Tap;
+            @One_Tap.canceled -= instance.OnOne_Tap;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -959,6 +988,7 @@ public partial class @Quickdraw: IInputActionCollection2, IDisposable
     public interface IPlayerActions
     {
         void OnFire(InputAction.CallbackContext context);
+        void OnOne_Tap(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

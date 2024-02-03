@@ -276,6 +276,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc406d07667d8e641a8d48cfb1b64a0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pressAmount: 20
+  decreaseAmount: 0.1
 --- !u!1 &178203893
 GameObject:
   m_ObjectHideFlags: 0
