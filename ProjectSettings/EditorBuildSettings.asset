@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project/Scenes/Battle.unity
     guid: a727ecf468a150b47b66c0d5cf4b3c48
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: d22db8654b7fe6f46ab5405929cbb142, type: 2}
+    com.unity.adaptiveperformance.samsung.android.provider_settings: {fileID: 11400000, guid: f480d675f4c32e2459ec99ebb48a8539, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 9313209209ef06845992cca9e4301637, type: 2}
