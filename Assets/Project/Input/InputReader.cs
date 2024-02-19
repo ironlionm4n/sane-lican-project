@@ -38,6 +38,11 @@ namespace Project.Input
                 FirePressed.Invoke();
             }
         }
+
+        public void OnOne_Tap(InputAction.CallbackContext context)
+        {
+
+        }
         
     }
 }
