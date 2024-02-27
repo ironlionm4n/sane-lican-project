@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.InputSystem;
+using System.Linq;
 
 public class PlateMinigameManager : MonoBehaviour
 {
@@ -31,18 +32,37 @@ public class PlateMinigameManager : MonoBehaviour
 
     private float[] speeds = new float[3] { 0.5f, 1.3f, 2 };
 
+    private float[] speedsOriginals = new float[3] { 0.5f, 1.3f, 2 };
+
+    private Pattern[] wave1 = new Pattern[3];
+
+    private Pattern straight = new Pattern(0, 0, 0.5f);
+    private Pattern midLob = new Pattern(3, -22.5f, 1.3f);
+    private Pattern highLob = new Pattern(5, -45, 2);
+
     private float rotationDuration = 0.3f;
 
     private int numberOfShots = 3;
 
-    private Queue<Plate> currentPlates = new Queue<Plate>();
+    private List<Plate> currentPlates = new List<Plate>();
 
+    [SerializeField]
+    private Transform straightEndTarget;
+
+    [SerializeField]
+    private Transform lobEndTarget;
+
+    [SerializeField]
+    private Transform highLobTarget;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         input = new Quickdraw();
         plateSpawnPoint = plateLauncher.transform.GetChild(0);
+
+        wave1 = new Pattern[] { straight, highLob, straight };
+
         StartCoroutine(Fire());
 
     }
@@ -67,24 +87,48 @@ public class PlateMinigameManager : MonoBehaviour
         }
     }
 
-    private void Swing()
+    public void Swing()
     {
         if(currentPlates.Count > 0)
         {
-            Plate plate = currentPlates.Dequeue();
-            plate.Hit();
+            currentPlates.RemoveAll(x => x == null);
+           
+            Plate plate = currentPlates.OrderByDescending(x => x.percentTraveled).FirstOrDefault(); 
+
+            if (plate != null)
+            {
+                plate.Hit();
+            }
         }
     }
 
     private IEnumerator Fire()
     {
-        for(int i = 0; i < numberOfShots; i++)
+
+        yield return new WaitForSeconds(2);
+
+        foreach(var pat in wave1)
         {
             GameObject newPlate = Instantiate(platePrefab, plateSpawnPoint.position, Quaternion.identity);
-            currentPlates.Enqueue(newPlate.GetComponent<Plate>());
-           
-            newPlate.GetComponent<Plate>().StartProjectile(speeds[i], heights[i]);
-            RotateLauncher(i);
+            currentPlates.Add(newPlate.GetComponent<Plate>());
+
+            Transform endTarget = null;
+
+            if (pat.angle == 0)
+            {
+                endTarget = straightEndTarget;
+            }
+            else if (pat.angle == -22.5f)
+            {
+                endTarget = lobEndTarget;
+            }
+            else
+            {
+                endTarget = highLobTarget;
+            }
+
+            newPlate.GetComponent<Plate>().StartProjectile(pat.speed, pat.height, endTarget);
+            RotateLauncher(pat.angle);
 
             yield return new WaitForSeconds(delayBetweenShots);
         }
@@ -92,19 +136,30 @@ public class PlateMinigameManager : MonoBehaviour
         RotateLauncher(0);
     }
 
-    private void RotateLauncher(int angleIdentifier)
+    private void RotateLauncher(float angleIdentifier)
     {
-        if(angleIdentifier == 0)
-        {
-            plateLauncher.DORotate(new Vector3(0, 0, angles[0]), rotationDuration);
-        }
-        else if(angleIdentifier == 1)
-        {
-            plateLauncher.DORotate(new Vector3(0, 0, angles[1]), rotationDuration);
-        }
-        else if (angleIdentifier == 2)
-        {
-            plateLauncher.DORotate(new Vector3(0, 0, angles[2]), rotationDuration);
-        }
+        plateLauncher.DORotate(new Vector3(0, 0, angleIdentifier), rotationDuration);
     }
+}
+
+struct Pattern
+{
+    public float speed;
+    public float height;
+    public float angle;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="height"></param>
+    /// <param name="angle"></param>
+    /// <param name="speed"></param>
+    public Pattern(float height, float angle, float speed) 
+    {
+        this.speed = speed;
+        this.height = height;
+        this.angle = angle;
+    }
+
+
 }

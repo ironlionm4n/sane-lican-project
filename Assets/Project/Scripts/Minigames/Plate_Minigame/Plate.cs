@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Plate : MonoBehaviour
@@ -17,9 +19,12 @@ public class Plate : MonoBehaviour
 
 
 
-    private Transform critZone;
+    private Transform endZone;
     private Transform plateSpawn;
 
+    private Queue<Plate> currentPlates;
+
+    public float percentTraveled;
 
 
     // Start is called before the first frame update
@@ -41,6 +46,8 @@ public class Plate : MonoBehaviour
         while (timePassed < duration)
         {
             float linearT = timePassed / duration; //0 to 1 time
+            percentTraveled = linearT;
+
             float heightT = movementCurve.Evaluate(linearT); //value from curve
 
             float height = Mathf.Lerp(0f, heightY, heightT);
@@ -52,17 +59,20 @@ public class Plate : MonoBehaviour
             yield return null;
 
         }
+
+        //Made it to end so destroy
+        Destroy(gameObject);
     }
 
-    public void StartProjectile(float speed, float arcHeight)
+    public void StartProjectile(float speed, float arcHeight, Transform endTarget)
     {
         duration = speed;
         heightY = arcHeight;
 
-        critZone = GameObject.Find("Crit-Indicator").transform;
+        endZone = endTarget;
         plateSpawn = GameObject.Find("PlateSpawnPoint").transform;
 
-        StartCoroutine(Curve(plateSpawn.position, critZone.position));
+        StartCoroutine(Curve(plateSpawn.position, endZone.position));
     }
 
     public void Hit()
@@ -81,6 +91,9 @@ public class Plate : MonoBehaviour
             return;
         }
 
+        //Missed
+        Debug.Log("Miss");
+        Destroy(gameObject);
         return;
     }
 
@@ -94,6 +107,19 @@ public class Plate : MonoBehaviour
         if (collision.CompareTag("Win"))
         {
             hit = true;
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Crit"))
+        {
+            crit = false;
+        }
+
+        if (collision.CompareTag("Win"))
+        {
+            hit = false;
         }
     }
 }
